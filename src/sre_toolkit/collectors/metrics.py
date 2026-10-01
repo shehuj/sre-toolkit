@@ -14,9 +14,9 @@ per API call. So the cheapest way to fetch 20 metrics is one request containing
 from __future__ import annotations
 
 import statistics
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Iterable
 
 from ..models import Severity, Signal, SignalKind, Window
 
@@ -54,8 +54,8 @@ class MetricSeries:
     values: list[float] = field(default_factory=list)
 
     def split(self, at: datetime) -> tuple[list[float], list[float]]:
-        before = [v for t, v in zip(self.timestamps, self.values) if t < at]
-        during = [v for t, v in zip(self.timestamps, self.values) if t >= at]
+        before = [v for t, v in zip(self.timestamps, self.values, strict=False) if t < at]
+        during = [v for t, v in zip(self.timestamps, self.values, strict=False) if t >= at]
         return before, during
 
 
@@ -152,7 +152,7 @@ def to_signal(series: MetricSeries, window: Window, source: str) -> Signal | Non
     peak = max(during) if spec.warn_below is None else min(during)
     severity, summary = _classify(spec, baseline, peak, during)
     pairs = [
-        (t, v) for t, v in zip(series.timestamps, series.values) if t >= window.start
+        (t, v) for t, v in zip(series.timestamps, series.values, strict=False) if t >= window.start
     ]
     first_seen = _onset(spec, series, window)
 
@@ -208,7 +208,7 @@ def _onset(spec: MetricSpec, series: MetricSeries, window: Window) -> datetime |
     base = statistics.median(before)
     spread = statistics.pstdev(before) if len(before) > 1 else 0.0
     threshold = base + max(spread * 3, abs(base) * 0.5, 1e-9)
-    for ts, value in zip(series.timestamps, series.values):
+    for ts, value in zip(series.timestamps, series.values, strict=False):
         if ts >= window.start and value >= threshold:
             return ts
     return None

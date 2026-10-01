@@ -4,10 +4,10 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 
-from tests.support import make_context, window  # noqa: F401
-
 from sre_toolkit.cli import main
 from sre_toolkit.context import parse_time
+
+from tests.support import make_context
 
 UTC = timezone.utc
 
@@ -45,6 +45,19 @@ class DemoRuns(unittest.TestCase):
         _, out = run(["--demo", "incident", "postmortem"])
         for heading in ("# Post-incident review", "## Timeline (UTC)", "## Action items"):
             self.assertIn(heading, out)
+
+    def test_exit_zero_suppresses_severity_codes_only(self):
+        severity_code, _ = run(["--demo", "--no-color", "incident", "investigate"])
+        self.assertEqual(severity_code, 2)
+
+        suppressed, out = run(["--exit-zero", "--demo", "--no-color", "incident", "investigate"])
+        self.assertEqual(suppressed, 0)
+        self.assertIn("Database connection exhaustion", out,
+                      "--exit-zero must still print the full report")
+
+    def test_exit_zero_does_not_mask_real_failures(self):
+        code, _ = run(["--exit-zero", "incident", "summarize"])
+        self.assertEqual(code, 1, "a usage error is not a severity code")
 
     def test_summarize_without_a_file_explains_itself(self):
         code, _ = run(["incident", "summarize"])

@@ -28,10 +28,12 @@ from ..models import Severity, Signal, SignalKind, TimelineEvent, Window
 UTC = timezone.utc
 
 _NORMALISERS: tuple[tuple[re.Pattern, str], ...] = (
-    (re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I), "<uuid>"),
+    (re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I),
+     "<uuid>"),
     (re.compile(r"\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b"), "<ip>"),
     (re.compile(r"\b[0-9a-f]{16,}\b", re.I), "<hash>"),
-    (re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?"), "<ts>"),
+    (re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:?\d{2})?"),
+     "<ts>"),
     (re.compile(r"\b(?:arn:aws:[^\s\"']+)"), "<arn>"),
     (re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.]+\b"), "<email>"),
     (re.compile(r"/[\w./-]{8,}"), "<path>"),
@@ -78,7 +80,8 @@ ERROR_CLASSES: tuple[tuple[str, re.Pattern], ...] = (
         r"certificate (?:verify|has expired|unknown)|SSLError|handshake fail|TLS alert", re.I)),
     ("deadlock", re.compile(r"deadlock detected|lock wait timeout|serialization failure", re.I)),
     ("disk_full", re.compile(r"no space left on device|disk (?:is )?full|ENOSPC", re.I)),
-    ("crash_loop", re.compile(r"CrashLoopBackOff|restarting failed container|exit code 1(?:37|43)", re.I)),
+    ("crash_loop", re.compile(
+        r"CrashLoopBackOff|restarting failed container|exit code 1(?:37|43)", re.I)),
 )
 
 DEFAULT_FILTER = "?ERROR ?Error ?error ?FATAL ?Exception ?exception ?WARN ?Timeout ?timeout"

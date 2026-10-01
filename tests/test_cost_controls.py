@@ -1,7 +1,5 @@
 import unittest
 
-from tests.support import make_context  # noqa: F401
-
 from sre_toolkit.cache import Cache
 from sre_toolkit.errors import BudgetExceeded
 from sre_toolkit.ledger import Ledger

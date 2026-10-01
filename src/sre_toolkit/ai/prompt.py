@@ -80,7 +80,8 @@ def build(snap: Snapshot, max_log_patterns: int = 8, max_chars: int = 6000) -> s
         f"collectors: {', '.join(snap.collectors_run) or 'none'}",
     ]
     if snap.collector_errors:
-        lines.append(f"collector_errors: {'; '.join(f'{k}={v}' for k, v in snap.collector_errors.items())}")
+        failures = "; ".join(f"{k}={v}" for k, v in snap.collector_errors.items())
+        lines.append(f"collector_errors: {failures}")
 
     lines.append("\nSIGNALS (name | severity | baseline -> peak | change | onset_utc)")
     for sig in sorted(snap.signals, key=lambda s: -s.severity.rank)[:25]:
@@ -94,7 +95,8 @@ def build(snap: Snapshot, max_log_patterns: int = 8, max_chars: int = 6000) -> s
     if snap.events:
         lines.append("\nTIMELINE (utc | source | event)")
         for ev in snap.sorted_events()[:25]:
-            lines.append(f"- {ev.at.strftime('%H:%M:%S')} | {ev.source} | {ev.title} {ev.detail}".rstrip())
+            stamp = ev.at.strftime("%H:%M:%S")
+            lines.append(f"- {stamp} | {ev.source} | {ev.title} {ev.detail}".rstrip())
 
     if snap.log_patterns:
         lines.append("\nLOG PATTERNS (count | level | classes | normalised pattern)")
@@ -114,7 +116,8 @@ def build(snap: Snapshot, max_log_patterns: int = 8, max_chars: int = 6000) -> s
     if snap.findings:
         lines.append("\nRULE-BASED FINDINGS (these came from deterministic correlation)")
         for finding in snap.findings:
-            lines.append(f"- [{finding.confidence_label}] {finding.title}: {finding.rationale}"[:400])
+            label = finding.confidence_label
+            lines.append(f"- [{label}] {finding.title}: {finding.rationale}"[:400])
 
     lines.append(
         "\nTASK: Confirm, refine or contradict the rule-based findings using only the evidence "

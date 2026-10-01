@@ -1,12 +1,13 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from tests.support import log_events, make_context, metric_data, window
-
 from sre_toolkit.collectors import logs as log_col
 from sre_toolkit.collectors import metrics as metric_col
-from sre_toolkit.collectors import network, rds as rds_col
+from sre_toolkit.collectors import network
+from sre_toolkit.collectors import rds as rds_col
 from sre_toolkit.models import Severity, Signal, SignalKind
+
+from tests.support import log_events, make_context, metric_data, window
 
 UTC = timezone.utc
 

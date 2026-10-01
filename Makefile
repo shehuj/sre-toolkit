@@ -20,9 +20,9 @@ cost: ## Show the price table the toolkit meters against
 fixture: ## Regenerate the demo incident fixture
 	$(PY) scripts/make_demo_fixture.py
 
-lint: ## Lint with ruff if it is available
+lint: ## Lint with ruff (same pinned version CI uses)
 	@command -v ruff >/dev/null 2>&1 && ruff check src tests scripts || \
-		echo "ruff not installed — pip install 'sre-toolkit[dev]'"
+		echo "ruff not installed — run: pip install -e '.[dev]'  (pins ruff==0.5.7, as CI does)"
 
 install: ## Install the CLI (core only, zero dependencies)
 	$(PY) -m pip install -e .

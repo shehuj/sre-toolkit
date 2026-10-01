@@ -12,9 +12,9 @@ temporal ordering.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Callable
 
 from ..models import Finding, Severity, Snapshot
 
@@ -124,9 +124,14 @@ def change_correlation(snap: Snapshot) -> Finding | None:
             "the cheapest hypothesis to falsify first."
         ),
         evidence=[f"{_fmt_time(deploy.at)} {deploy.title} {deploy.detail}".strip()]
-        + [f"{_fmt_time(s.first_seen)} {s.name} — {s.summary}" for s in impacted[:4] if s.first_seen],
+        + [
+            f"{_fmt_time(s.first_seen)} {s.name} — {s.summary}"
+            for s in impacted[:4]
+            if s.first_seen
+        ],
         next_steps=[
-            "Diff the deployed revision against the previous one (task definition, image tag, config).",
+            "Diff the deployed revision against the previous one (task definition, image tag, "
+            "config).",
             "Check whether the previous revision is still available for a rollback decision.",
             "Compare per-task metrics across the two revisions before rolling forward.",
         ],

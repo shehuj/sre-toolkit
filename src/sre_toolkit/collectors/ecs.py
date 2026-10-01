@@ -176,7 +176,6 @@ def stopped_task_signals(stopped: list[dict[str, Any]], window: Window) -> list[
     oom = [t for t in in_window if "OutOfMemory" in (t.get("reason") or "")
            or 137 in t.get("exit_codes", {}).values()]
     severity = Severity.CRIT if oom or len(in_window) >= 3 else Severity.WARN
-    reason = oom[0]["reason"] if oom else in_window[0].get("reason", "")
     return [
         Signal(
             name="ECS task terminations",
@@ -227,7 +226,7 @@ def _trim(message: str, width: int = 110) -> str:
 def _as_dt(value: Any) -> datetime | None:
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=UTC)
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return datetime.fromtimestamp(value, UTC)
     if isinstance(value, str):
         return _parse(value)

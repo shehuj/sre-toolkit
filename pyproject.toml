@@ -23,7 +23,7 @@ k8s = ["kubernetes>=29"]
 dns = ["dnspython>=2.6"]
 ai = ["anthropic[bedrock]>=1.0"]
 all = ["boto3>=1.34", "kubernetes>=29", "dnspython>=2.6", "anthropic[bedrock]>=1.0"]
-dev = ["pytest>=8", "ruff>=0.5"]
+dev = ["pytest>=8", "ruff==0.5.7"]
 
 [project.scripts]
 sre = "sre_toolkit.cli:main"

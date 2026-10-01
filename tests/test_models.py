@@ -2,8 +2,6 @@ import json
 import unittest
 from datetime import datetime, timezone
 
-from tests.support import ROOT  # noqa: F401  (puts src on sys.path)
-
 from sre_toolkit.models import Finding, Severity, Signal, SignalKind, Snapshot, Window
 
 UTC = timezone.utc

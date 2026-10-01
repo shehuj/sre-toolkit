@@ -104,8 +104,9 @@ def _describe(result: dict) -> str:
             f"{result.get('issuer')}, {result.get('protocol')}"
         )
     if check == "http":
+        server = f", {result['server']}" if result.get("server") else ""
         return (
             f"HTTP {result.get('status')} in {result.get('total_ms')} ms "
-            f"({result.get('body_bytes', 0)} bytes{', ' + result['server'] if result.get('server') else ''})"
+            f"({result.get('body_bytes', 0)} bytes{server})"
         )
     return str(result)

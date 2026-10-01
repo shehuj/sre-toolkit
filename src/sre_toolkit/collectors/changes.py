@@ -94,7 +94,7 @@ def deployment_markers(events: list[TimelineEvent]) -> list[TimelineEvent]:
 def _as_dt(value: Any) -> datetime | None:
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=UTC)
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return datetime.fromtimestamp(value, UTC)
     if isinstance(value, str):
         try:

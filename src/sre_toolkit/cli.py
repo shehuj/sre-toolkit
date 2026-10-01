@@ -83,6 +83,11 @@ def build_parser() -> argparse.ArgumentParser:
     out.add_argument("--demo", action="store_true",
                      help="use the bundled demo snapshot; no AWS account or spend required")
     out.add_argument("-v", "--verbose", action="store_true", help="log collector detail to stderr")
+    out.add_argument(
+        "--exit-zero", action="store_true",
+        help="always exit 0 when the run succeeds, even if the findings are critical "
+             "(real failures — bad target, missing extra, budget breach — still exit non-zero)",
+    )
 
     sub = parser.add_subparsers(dest="group", metavar="<group>")
 
@@ -134,7 +139,14 @@ def main(argv: list[str] | None = None) -> int:
 
     ctx = build_context(args)
     try:
-        return handler(ctx, args) or 0
+        code = handler(ctx, args) or 0
+        # Severity codes (1 = warn, 2 = crit) are what make these commands useful in
+        # a pipeline, but a reporting run — CI smoke tests, a dashboard job — wants the
+        # report without the failure. --exit-zero suppresses only those two; a genuine
+        # error still exits non-zero.
+        if args.exit_zero and code in (1, 2):
+            return 0
+        return code
     except SreToolkitError as exc:
         ctx.console.error(str(exc))
         return exc.exit_code

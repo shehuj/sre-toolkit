@@ -35,10 +35,27 @@ jobs:
           PYTHONPATH: src:.
 
       - name: CLI smoke test on the bundled demo incident
+        # The demo incident is critical, so these commands exit 2 by design.
+        # --exit-zero asks for the report without the failure.
         run: |
-          python -m sre_toolkit --demo --no-color incident investigate || [ $? -eq 2 ]
-          python -m sre_toolkit --demo --json incident snapshot > /dev/null
+          python -m sre_toolkit --exit-zero --demo --no-color incident investigate
+          python -m sre_toolkit --exit-zero --demo --json incident snapshot > /dev/null
+          python -m sre_toolkit --exit-zero --demo incident postmortem > /dev/null
           python -m sre_toolkit cost prices > /dev/null
+          python -m sre_toolkit --dry-run --no-color cost estimate \
+            --service demo --cluster demo --db demo-db > /dev/null
+        env:
+          PYTHONPATH: src
+
+      - name: Severity exit codes still work
+        # Guard the contract the previous step opts out of: a critical incident
+        # must exit 2 without --exit-zero.
+        run: |
+          set +e
+          python -m sre_toolkit --demo --no-color incident investigate > /dev/null
+          code=$?
+          set -e
+          [ "$code" -eq 2 ] || { echo "expected exit 2 for a critical incident, got $code"; exit 1; }
         env:
           PYTHONPATH: src
 
@@ -48,6 +65,7 @@ jobs:
           git diff --exit-code -- src/sre_toolkit/fixtures/demo_incident.json
 
       - name: Lint
+        # Version pinned here and in the [dev] extra, so local and CI agree.
         run: |
           pip install --quiet ruff==0.5.7
           ruff check src tests scripts

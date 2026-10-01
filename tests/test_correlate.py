@@ -1,8 +1,6 @@
 import unittest
 from datetime import timedelta
 
-from tests.support import window
-
 from sre_toolkit.commands._shared import demo_snapshot
 from sre_toolkit.correlate import correlate
 from sre_toolkit.models import (
@@ -12,6 +10,8 @@ from sre_toolkit.models import (
     Snapshot,
     TimelineEvent,
 )
+
+from tests.support import window
 
 
 def blank(service="api"):
