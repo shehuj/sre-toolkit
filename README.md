@@ -140,11 +140,14 @@ sre cache stats | sre cache clear
 ```
 
 Global flags that matter: `--max-spend USD`, `--dry-run`, `--cache-ttl`, `--deep`,
-`--ai`, `--model`, `--json`, `-o FILE`, `--demo`, `--region`, `--profile`.
+`--ai`, `--model`, `--json`, `-o FILE`, `--demo`, `--region`, `--profile`,
+`--exit-zero`.
 
 Exit codes compose in shell pipelines and CI: `0` healthy, `1` warning, `2`
 critical, `3` target not found, `4` missing optional dependency, `5` budget
-exceeded.
+exceeded. Pass `--exit-zero` when you want the report without the failure — it
+suppresses the severity codes (1 and 2) and nothing else, so a bad target, a
+missing extra or a budget breach still fails the step.
 
 ## How it works
 

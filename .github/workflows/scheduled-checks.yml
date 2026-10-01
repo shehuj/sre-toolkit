@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # No --exit-zero here on purpose: a warning or critical finding should fail
+      # the job, because a failed scheduled run is how you get told about it.
       - name: Certificate expiry (no credentials, no cost)
         env:
           PYTHONPATH: src
@@ -52,6 +54,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      # Likewise deliberate: exit 1 (budget mostly consumed) or 2 (objective
+      # missed) should fail this job. Add --exit-zero if you only want the report.
       - name: Error budget report
         env:
           PYTHONPATH: src
