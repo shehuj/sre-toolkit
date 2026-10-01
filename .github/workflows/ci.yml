@@ -1,0 +1,53 @@
+name: ci
+
+# Cost note: this workflow is deliberately small. One job, one Python version,
+# no dependency installation — the core package has no runtime dependencies, so
+# `python -m unittest` is the whole test command. A typical run finishes in well
+# under a minute of GitHub-hosted runner time.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Supersede in-flight runs for the same ref instead of paying for both.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tests (no dependencies to install)
+        run: python -m unittest discover -s tests -v
+        env:
+          PYTHONPATH: src:.
+
+      - name: CLI smoke test on the bundled demo incident
+        run: |
+          python -m sre_toolkit --demo --no-color incident investigate || [ $? -eq 2 ]
+          python -m sre_toolkit --demo --json incident snapshot > /dev/null
+          python -m sre_toolkit cost prices > /dev/null
+        env:
+          PYTHONPATH: src
+
+      - name: Demo fixture is reproducible
+        run: |
+          python scripts/make_demo_fixture.py
+          git diff --exit-code -- src/sre_toolkit/fixtures/demo_incident.json
+
+      - name: Lint
+        run: |
+          pip install --quiet ruff==0.5.7
+          ruff check src tests scripts

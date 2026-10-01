@@ -1,0 +1,62 @@
+name: scheduled-checks
+
+# A worked example of running this toolkit on a schedule for effectively nothing.
+#
+# The certificate job needs no AWS account at all — it is TLS handshakes from the
+# runner. The SLO job reads three CloudWatch metrics once a day: 3 metrics ×
+# $0.01/1,000 = $0.00003 per run, about a cent per millennium.
+on:
+  schedule:
+    - cron: "17 6 * * *" # daily, off the hour to avoid the scheduler's rush minute
+  workflow_dispatch:
+    inputs:
+      domains:
+        description: Space-separated domains to check
+        default: example.com
+
+permissions:
+  contents: read
+  id-token: write # required for the OIDC exchange, nothing else
+
+jobs:
+  certificates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Certificate expiry (no credentials, no cost)
+        env:
+          PYTHONPATH: src
+          DOMAINS: ${{ github.event.inputs.domains || vars.CERT_DOMAINS }}
+        run: |
+          [ -n "$DOMAINS" ] || { echo "set the CERT_DOMAINS repository variable"; exit 0; }
+          args=""
+          for domain in $DOMAINS; do args="$args --domain $domain"; done
+          python -m sre_toolkit cert check $args --warn-days 30 --crit-days 7
+
+  error-budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: vars.SLO_TARGET_GROUP != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the AWS extra
+        run: pip install --quiet "boto3>=1.34"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Error budget report
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m sre_toolkit --max-spend 0.01 slo calculate \
+            --target-group "${{ vars.SLO_TARGET_GROUP }}" \
+            --objective "${{ vars.SLO_OBJECTIVE || '99.9' }}" \
+            --days 30

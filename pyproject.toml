@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sre-toolkit"
+version = "0.1.0"
+description = "OpsPilot — an SRE incident investigation toolkit that is cheap to run by design"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jenom" }]
+keywords = ["sre", "incident-response", "aws", "observability", "cli"]
+
+# The core CLI has ZERO runtime dependencies on purpose: nothing to install in CI,
+# fast cold starts in Lambda, and no supply-chain surface. Everything that costs
+# money or weight is an opt-in extra.
+dependencies = []
+
+[project.optional-dependencies]
+aws = ["boto3>=1.34"]
+k8s = ["kubernetes>=29"]
+dns = ["dnspython>=2.6"]
+ai = ["anthropic[bedrock]>=1.0"]
+all = ["boto3>=1.34", "kubernetes>=29", "dnspython>=2.6", "anthropic[bedrock]>=1.0"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+sre = "sre_toolkit.cli:main"
+ops = "sre_toolkit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Jenom/sre-toolkit"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sre_toolkit = ["fixtures/*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]
