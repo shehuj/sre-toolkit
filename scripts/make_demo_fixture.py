@@ -123,7 +123,9 @@ snapshot = {
             "severity": "warn", "summary": "dropped to 4.0 (warn ≤ 2.0)",
             "baseline": 6.0, "peak": 4.0, "unit": "Count",
             "first_seen": (START + timedelta(minutes=9)).isoformat(),
-            "series": series(lambda t: 6 if minutes_in(t) < 9 else (4 if minutes_in(t) < 20 else 6)),
+            "series": series(
+                lambda t: 6 if minutes_in(t) < 9 else (4 if minutes_in(t) < 20 else 6)
+            ),
             "tags": {"namespace": "AWS/ApplicationELB", "metric": "HealthyHostCount"},
         },
         {
@@ -163,7 +165,8 @@ snapshot = {
             "series": series(lambda t: recover(t, 5, 17, 0, 214), start=START),
             "evidence": [
                 "ERROR HikariPool-1 - Connection is not available, request timed out after 30000ms",
-                "ERROR o.s.w.s.m.s.DefaultHandlerExceptionResolver - 500 returned for /v2/customers",
+                "ERROR o.s.w.s.m.s.DefaultHandlerExceptionResolver - 500 returned for "
+                "/v2/customers",
             ],
         },
         {
@@ -184,7 +187,9 @@ snapshot = {
             "name": "ALB target health", "kind": "health", "source": "elbv2/customer-api-tg",
             "severity": "warn", "summary": "4/6 targets healthy — Target.Timeout",
             "baseline": 6.0, "peak": 4.0, "unit": "Count",
-            "evidence": ["Target.Timeout: health check timed out — app is up but too slow to answer"],
+            "evidence": [
+                "Target.Timeout: health check timed out — app is up but too slow to answer"
+            ],
             "tags": {"class": "target_health"},
         },
     ],
@@ -206,8 +211,8 @@ snapshot = {
         },
         {
             "at": (START + timedelta(minutes=9)).isoformat(), "source": "ecs",
-            "title": "(service customer-api) (port 8080) is unhealthy in target-group customer-api-tg "
-                     "due to (reason Request timed out)",
+            "title": "(service customer-api) (port 8080) is unhealthy in target-group "
+                     "customer-api-tg due to (reason Request timed out)",
             "severity": "crit",
         },
         {
@@ -223,7 +228,8 @@ snapshot = {
     "log_patterns": [
         {
             "pattern": "<ts> ERROR [http-nio-<n>-exec-<n>] c.e.c.r.CustomerRepository - "
-                       "HikariPool-<n> - Connection is not available, request timed out after <qty>",
+                       "HikariPool-<n> - Connection is not available, request timed out "
+                       "after <qty>",
             "count": 412, "level": "Error", "severity": "crit",
             "classes": ["connection_pool_exhausted", "timeout"],
             "first_seen": (START + timedelta(minutes=5)).isoformat(),
@@ -240,12 +246,14 @@ snapshot = {
             "first_seen": (START + timedelta(minutes=5, seconds=30)).isoformat(),
             "last_seen": (START + timedelta(minutes=20)).isoformat(),
             "sample": "2026-10-01T06:35:41.880Z ERROR "
-                      "o.s.w.s.m.s.DefaultHandlerExceptionResolver - 500 returned for /v2/customers",
+                      "o.s.w.s.m.s.DefaultHandlerExceptionResolver - 500 returned for "
+                      "/v2/customers",
             "streams": 6,
         },
         {
-            "pattern": "<ts> WARN c.z.h.p.PoolBase - HikariPool-<n> - Failed to validate connection "
-                       "org.postgresql.jdbc.PgConnection@<hash> (This connection has been closed.)",
+            "pattern": "<ts> WARN c.z.h.p.PoolBase - HikariPool-<n> - Failed to validate "
+                       "connection org.postgresql.jdbc.PgConnection@<hash> (This connection "
+                       "has been closed.)",
             "count": 203, "level": "Warn", "severity": "warn",
             "classes": ["db_connection_refused"],
             "first_seen": (START + timedelta(minutes=6)).isoformat(),

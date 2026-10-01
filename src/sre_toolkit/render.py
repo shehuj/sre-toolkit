@@ -9,7 +9,8 @@ import json
 import os
 import shutil
 import sys
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 from .models import Finding, Severity, Snapshot
 
@@ -93,10 +94,10 @@ class Console:
         for row in rows:
             for i, cell in enumerate(row[: len(widths)]):
                 widths[i] = max(widths[i], len(cell))
-        head = "  ".join(h.upper().ljust(w) for h, w in zip(headers, widths))
+        head = "  ".join(h.upper().ljust(w) for h, w in zip(headers, widths, strict=False))
         self.out(self.style(head, "dim"))
         for row in rows:
-            self.out("  ".join(c.ljust(w) for c, w in zip(row, widths)))
+            self.out("  ".join(c.ljust(w) for c, w in zip(row, widths, strict=False)))
 
     def json(self, payload: Any) -> None:
         print(json.dumps(payload, indent=2, default=str), file=self.stream)
@@ -223,7 +224,8 @@ def render_snapshot(con: Console, snap: Snapshot, show_series: bool = True) -> N
         con.table(
             ["count", "level", "pattern"],
             [
-                [p.get("count"), p.get("level", ""), _truncate(p.get("pattern", ""), con.width - 20)]
+                [p.get("count"), p.get("level", ""),
+                 _truncate(p.get("pattern", ""), con.width - 20)]
                 for p in snap.log_patterns[:8]
             ],
         )

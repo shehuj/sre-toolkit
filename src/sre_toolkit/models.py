@@ -236,7 +236,7 @@ def _encode(obj: Any) -> Any:
         return (obj if obj.tzinfo else obj.replace(tzinfo=UTC)).isoformat()
     if isinstance(obj, dict):
         return {k: _encode(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [_encode(v) for v in obj]
     if isinstance(obj, float) and obj != obj:  # NaN is not valid JSON
         return None

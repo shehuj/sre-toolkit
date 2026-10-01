@@ -4,10 +4,10 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 
-from tests.support import make_context, window  # noqa: F401
-
 from sre_toolkit.cli import main
 from sre_toolkit.context import parse_time
+
+from tests.support import make_context
 
 UTC = timezone.utc
 

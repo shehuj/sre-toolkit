@@ -65,6 +65,7 @@ jobs:
           git diff --exit-code -- src/sre_toolkit/fixtures/demo_incident.json
 
       - name: Lint
+        # Version pinned here and in the [dev] extra, so local and CI agree.
         run: |
           pip install --quiet ruff==0.5.7
           ruff check src tests scripts

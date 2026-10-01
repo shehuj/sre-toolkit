@@ -67,7 +67,7 @@ def http_check(
             body_bytes=0,
             error=f"HTTP {exc.code} {exc.reason}",
         )
-    except (urllib.error.URLError, socket.timeout, ssl.SSLError, OSError) as exc:
+    except (TimeoutError, urllib.error.URLError, ssl.SSLError, OSError) as exc:
         out.update(ok=False, total_ms=round((time.perf_counter() - started) * 1000, 1),
                    error=str(getattr(exc, "reason", exc)))
         return out
@@ -140,7 +140,8 @@ def tls_check(target: str, timeout: float = 5.0, warn_days: int = 30) -> dict[st
                 out["protocol"] = tls.version()
                 out["cipher"] = (tls.cipher() or ("",))[0]
     except ssl.SSLCertVerificationError as exc:
-        out.update(ok=False, verified=False, error=f"certificate verification failed: {exc.verify_message}")
+        out.update(ok=False, verified=False,
+                   error=f"certificate verification failed: {exc.verify_message}")
         return out
     except (OSError, ssl.SSLError) as exc:
         out.update(ok=False, error=str(exc))

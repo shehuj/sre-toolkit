@@ -53,7 +53,8 @@ def run_estimate(ctx, args) -> int:
     con.kv("Metrics planned", snap.meta.get("metrics_requested", 0))
     con.kv("Total estimate", fmt_usd(ledger["avoided_usd"] + ledger["total_usd"]))
     con.out(con.style(
-        "Nothing was called. Unbilled operations are listed as 'free' so the whole plan is visible.",
+        "Nothing was called. Unbilled operations are listed as 'free' so the whole plan "
+        "is visible.",
         "dim",
     ))
     if ctx.use_ai:
@@ -67,7 +68,8 @@ def run_estimate(ctx, args) -> int:
 
 def run_prices(ctx, args) -> int:
     con = ctx.console
-    con.title("PRICE TABLE", "us-east-1 list prices; override in ~/.config/sre-toolkit/pricing.json")
+    con.title("PRICE TABLE",
+              "us-east-1 list prices; override in ~/.config/sre-toolkit/pricing.json")
 
     con.section("AWS APIs")
     con.table(

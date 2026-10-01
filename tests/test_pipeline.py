@@ -4,13 +4,15 @@ is covered without credentials, network or spend."""
 import unittest
 from datetime import timedelta
 
-from tests.support import log_events, make_context, window
-
 from sre_toolkit.errors import BudgetExceeded
 from sre_toolkit.investigate import Target, investigate, snapshot
 from sre_toolkit.models import Severity
 
+from tests.support import log_events, make_context, window
+
 WIN = window(30)
+TG_ARN = "arn:aws:elasticloadbalancing:us-east-1:1:targetgroup/api-tg/abc"
+LB_ARN = "arn:aws:elasticloadbalancing:us-east-1:1:loadbalancer/app/api-lb/def"
 
 SERVICE = {
     "services": [
@@ -33,9 +35,7 @@ SERVICE = {
                     "message": "(service api) (port 8080) is unhealthy in target-group api-tg",
                 }
             ],
-            "loadBalancers": [
-                {"targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:1:targetgroup/api-tg/abc"}
-            ],
+            "loadBalancers": [{"targetGroupArn": TG_ARN}],
         }
     ]
 }
@@ -45,11 +45,8 @@ TARGET_GROUPS = {
         {
             "TargetGroupName": "api-tg", "Protocol": "HTTP", "Port": 8080,
             "HealthCheckPath": "/healthz", "HealthCheckIntervalSeconds": 15,
-            "TargetGroupArn":
-                "arn:aws:elasticloadbalancing:us-east-1:1:targetgroup/api-tg/abc",
-            "LoadBalancerArns": [
-                "arn:aws:elasticloadbalancing:us-east-1:1:loadbalancer/app/api-lb/def"
-            ],
+            "TargetGroupArn": TG_ARN,
+            "LoadBalancerArns": [LB_ARN],
         }
     ]
 }
