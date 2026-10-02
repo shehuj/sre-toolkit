@@ -74,11 +74,13 @@ def run_ecs(ctx, args) -> int:
     window = ctx.resolve_window(args.start, args.end, args.minutes)
     con = ctx.console
     result = ecs_col.collect(ctx, args.cluster, args.service, window)
-    if not result.get("service"):
+    if not result.get("service") and not ctx.dry_run:
         con.error(f"ECS service {args.cluster}/{args.service} not found")
         return 3
 
-    svc = result["service"]
+    # Under --dry-run nothing was called, so nothing can be "found" — carry on and
+    # price the plan instead of reporting a missing target.
+    svc = result.get("service") or {}
     con.title("ECS SERVICE", f"{args.cluster}/{args.service} · {window}")
     con.kv("Status", svc.get("status"))
     con.kv("Tasks", f"{svc.get('runningCount')}/{svc.get('desiredCount')} running "
@@ -130,11 +132,11 @@ def run_rds(ctx, args) -> int:
     window = ctx.resolve_window(args.start, args.end, args.minutes)
     con = ctx.console
     result = rds_col.collect(ctx, args.instance, window, args.max_connections)
-    if not result.get("instance"):
+    if not result.get("instance") and not ctx.dry_run:
         con.error(f"RDS instance {args.instance} not found")
         return 3
 
-    info = result["instance"]
+    info = result.get("instance") or {}
     con.title("RDS INSTANCE", f"{args.instance} · {window}")
     for key in ("status", "class", "engine", "multi_az", "storage_gb", "backup_retention_days"):
         con.kv(key.replace("_", " ").title(), info.get(key))
@@ -173,8 +175,10 @@ def run_alb(ctx, args) -> int:
     con = ctx.console
     arns = alb_col.find_target_groups(ctx, args.name)
     if not arns:
-        con.error(f"no target groups found for {args.name}")
-        return 3
+        if not ctx.dry_run:
+            con.error(f"no target groups found for {args.name}")
+            return 3
+        arns = [args.name]  # price the plan against the name we were given
 
     con.title("LOAD BALANCER", f"{args.name} · {window}")
     worst = Severity.OK
@@ -182,6 +186,10 @@ def run_alb(ctx, args) -> int:
     for arn in arns[:5]:
         result = alb_col.collect(ctx, arn)
         group = result.get("target_group") or {}
+        if ctx.dry_run and not result.get("dimensions"):
+            # Dimensions come from a call we did not make; use placeholders so the
+            # metrics request still appears in the plan.
+            result["dimensions"] = {"TargetGroup": arn, "LoadBalancer": "unresolved"}
         con.section(f"Target group {group.get('TargetGroupName', arn.split('/')[-2])}")
         signals = list(result["signals"])
         dims = result.get("dimensions") or {}

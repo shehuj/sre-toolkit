@@ -26,4 +26,10 @@ class BudgetExceeded(SreToolkitError):
 
 
 class CollectorError(SreToolkitError):
-    """A collector failed in a way the user should see but that is not fatal."""
+    """An API call failed — usually credentials, region or permissions.
+
+    Deliberately not exit code 1: that means "read the telemetry, found warnings",
+    which is the opposite of "could not read the telemetry at all".
+    """
+
+    exit_code = 6

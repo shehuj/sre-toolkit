@@ -88,6 +88,29 @@ class FreeCommands(unittest.TestCase):
         self.assertEqual(caught.exception.code, 2)
 
 
+class ExitCodeContract(unittest.TestCase):
+    def test_collector_failure_is_not_the_warning_code(self):
+        from sre_toolkit.errors import CollectorError, SreToolkitError
+
+        self.assertEqual(CollectorError.exit_code, 6)
+        self.assertNotIn(
+            CollectorError.exit_code, (1, 2),
+            "'could not read the telemetry' must not reuse a severity code",
+        )
+        self.assertEqual(SreToolkitError.exit_code, 1)
+
+    def test_every_exit_code_has_one_meaning(self):
+        from sre_toolkit.errors import (
+            BudgetExceeded,
+            CollectorError,
+            MissingDependency,
+        )
+
+        codes = [MissingDependency.exit_code, BudgetExceeded.exit_code,
+                 CollectorError.exit_code]
+        self.assertEqual(len(codes), len(set(codes)))
+
+
 class WindowParsing(unittest.TestCase):
     def test_iso_epoch_and_relative_forms(self):
         self.assertEqual(
