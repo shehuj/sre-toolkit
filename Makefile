@@ -3,10 +3,13 @@
 PY ?= python3
 export PYTHONPATH := src:.
 
-.PHONY: help test demo lint fixture install install-aws install-all clean cost
+.PHONY: help run test demo lint fixture install install-aws install-all clean cost
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[1m%-14s\033[0m %s\n", $$1, $$2}'
+
+run: ## Interactive runner — asks for inputs, prices anything billable first
+	$(PY) run_local.py
 
 test: ## Run the test suite (no dependencies required)
 	$(PY) -m unittest discover -s tests -v

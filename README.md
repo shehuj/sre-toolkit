@@ -69,6 +69,17 @@ git clone https://github.com/Jenom/sre-toolkit && cd sre-toolkit
 PYTHONPATH=src python3 -m sre_toolkit --demo incident investigate
 ```
 
+Or skip the flags entirely and let it ask:
+
+```bash
+python3 run_local.py        # or: make run
+```
+
+The interactive runner checks your environment, prompts for what each action
+needs, remembers your answers, prices anything billable **before** it runs, and
+prints the equivalent `sre …` command so you can stop using it once the flags are
+familiar. It needs no dependencies for the free actions.
+
 ---
 
 ## Why it is cheap
@@ -145,7 +156,7 @@ Global flags that matter: `--max-spend USD`, `--dry-run`, `--cache-ttl`, `--deep
 
 Exit codes compose in shell pipelines and CI: `0` healthy, `1` warning, `2`
 critical, `3` target not found, `4` missing optional dependency, `5` budget
-exceeded. Pass `--exit-zero` when you want the report without the failure — it
+exceeded, `6` a collector could not read (credentials, region or permissions). Pass `--exit-zero` when you want the report without the failure — it
 suppresses the severity codes (1 and 2) and nothing else, so a bad target, a
 missing extra or a budget breach still fails the step.
 

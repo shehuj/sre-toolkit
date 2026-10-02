@@ -194,6 +194,28 @@ class Pipeline(unittest.TestCase):
         self.assertGreater(ctx.ledger.avoided + 1, 0)  # entries were still planned
         self.assertIsInstance(snap.signals, list)
 
+    def test_dry_run_plans_components_that_cannot_be_discovered(self):
+        """--dry-run calls nothing, so nothing can be 'found' — it must still plan."""
+        import io
+        import json as _json
+        from contextlib import redirect_stdout
+
+        from sre_toolkit.cli import main
+
+        for argv in (
+            ["--dry-run", "--json", "--region", "us-east-1", "aws", "ecs",
+             "--cluster", "nope", "--service", "nope"],
+            ["--dry-run", "--json", "--region", "us-east-1", "aws", "rds",
+             "--instance", "nope"],
+        ):
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                code = main(argv)
+            self.assertEqual(code, 0, f"{argv[5:]} should plan, not report a missing target")
+            payload = _json.loads(buffer.getvalue())
+            self.assertIn("cost", payload)
+            self.assertIn("cloudwatch:GetMetricData", payload["cost"]["by_operation"])
+
     def test_budget_breach_aborts_instead_of_silently_skipping(self):
         ctx = make_context(RESPONSES, max_spend=0.0000001)
         with self.assertRaises(BudgetExceeded):
